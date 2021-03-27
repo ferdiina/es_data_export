@@ -1,73 +1,63 @@
+不再更新，目前logstash导数据到文本或者数据库更加智能高效
+
+# 下一个版本将支持
+* 1、断点续导；
+* 2、配置参数动态输入；
+* 3、支持从一个index导入另一个index，一个集群导入另一个集群ES；
+* 4、写个定时脚本执行,PS:很多小伙伴说他们需要定时导出数据；
 # About
 该工具实现从ES中导出数据,并且可以对导出的数据格式和数据文件做部分自定义,该工具主要使用ES中srcoll接口多线程导出数据.
 
 # Design
 ![Base](https://github.com/760515805/es_data_export/blob/master/docs/design.png)
-&nbsp;&nbsp;&nbsp;&nbsp;项目通过两个线程池实现功能,一个线程池主要从ElasticSearch获取数据,获取方式为es接口的Srcoll方式,多线程的话则通过slice切割数据.另一个线程池主要拿来写文件,使用BlockingQueue把数据缓冲到线程队列中，通过一条线程单线程写文件.
 
-# Project Code Structure
+-  项目采用 `Java` 构建。
+-  访问ES部分采用官方 `RestClient` 构建通信。
+-  数据导出方式为`Srcoll`方式,多线程的话通过`slice`对ES的数据切割数据。
+-  线程池用 `BlockingQueue` 用作队列，如果队列使用完，则获取ES数据线程会阻塞等待新的队列。
 
-├─build 编译好的jar文件</br>
-├─docs 相关文档</br>
-├─lib 测试需要使用到的jar包，与项目无关</br>
-├─src</br>
-│&nbsp;&nbsp;└─main</br>
-│&nbsp;&nbsp;&nbsp;└─java</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;└─com</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─chenhj</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─config  项目配置参数目录</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─constan 项目常数目录</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─dao</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;└─imp 数据库接口实现</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─es     ES连接工厂</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─init   项目部分连接池，连接初始化</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─job    部分功能工作目录</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─service</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;└─imp 项目服务实现目录</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─task   项目任务线程实现目录</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─thread 线程池工厂</br>
-│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─util   工具目录</br>
-└─resources</br>
 
-run.sh：编译好的jar包启动脚本,也可使用java -jar启动，Linux下可用</br>
-stop.sh：已启动的jar包停止脚本，也可使用kill停止,Linux下可用</br>
-logback.xml：日志配置文件</br>
-build.bat：ant在window下的执行命令</br>
-build.xml：ant编译打包配置文件</br>
-export.properties：项目业务配置文件</br>
-pom.xml：maven配置文件</br>
+# TODO LIST
+
+* [x] 支持导出到文件，支持格式`txt`,`json`,`sql`。
+* [x] 支持导出文件对文件进行切割处理，文件大于多少新建写入下一个文件。
+* [x] 支持数据导出到数据库，支持所有主流数据库，连接池使用`druid`。
+* [ ] 程序停止后重新启动能从停止的点导出。
+* [ ] 配置参数动态输入。
+* [ ] 支持从一个index导入另一个index，一个集群导入另一个集群ES。
+* [ ] 定时脚本执行程序。
             
 # Version
 版本号说明:大版本.新增功能.提交次数
 
 ## V1.3.5
 
-&nbsp;&nbsp;1.新增ES导数据入DB，支持大部分主流数据库。<br>
-&nbsp;&nbsp;1.新增支持导出SQL语句自定义sql。<br>
-&nbsp;&nbsp;2.修改配置文件的配置名，利于阅读。<br>
-&nbsp;&nbsp;3.修改文件分割策略，以文件大小分割取消以文件数量分割。<br>
-&nbsp;&nbsp;4.优化代码。
+* 1.新增ES导数据入DB，支持大部分主流数据库。
+* 1.新增支持导出SQL语句自定义sql。
+* 2.修改配置文件的配置名，利于阅读。
+* 3.修改文件分割策略，以文件大小分割取消以文件数量分割。
+* 4.优化代码。
 
 ## V1.2.4
 
-&nbsp;&nbsp;1.新增线程池监控,在数据导出结束后正确停止程序。<br>
-&nbsp;&nbsp;2.新增配置启动前验证配置是否正确,设置配置默认值。<br>
-&nbsp;&nbsp;3.优化异常日志输出,更好排查问题。
+* 1.新增线程池监控,在数据导出结束后正确停止程序。
+* 2.新增配置启动前验证配置是否正确,设置配置默认值。
+* 3.优化异常日志输出,更好排查问题。
 
 ## V1.2.3
 
-&nbsp;&nbsp;1.优化写文件操作,使用BlockingQueue队列缓存。<br>
-&nbsp;&nbsp;2.新增支持文件写到一定大小后进行文件切割。<br>
-&nbsp;&nbsp;3.新增支持SSL加密获取数据。
+* 1.优化写文件操作,使用BlockingQueue队列缓存。
+* 2.新增支持文件写到一定大小后进行文件切割。
+* 3.新增支持SSL加密获取数据。
 
 ## V1.2.2
 
-&nbsp;&nbsp;1.重构代码,取消自己封装的HTTP工具，使用官方RestClient工具。<br>
-&nbsp;&nbsp;2.新增支持多线程拉取ES数据。
+* 1.重构代码,取消自己封装的HTTP工具，使用官方RestClient工具。
+* 2.新增支持多线程拉取ES数据。
 
 ## V1.0.1
 
-&nbsp;&nbsp;1.实现单线程导出数据。
+* 1.实现单线程导出数据。
 
 # Supported
 | Elasticsearch version        | support   |
